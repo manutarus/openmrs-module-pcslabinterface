@@ -22,6 +22,9 @@ import org.openmrs.module.pcslabinterface.rules.RemoveDNAPCRNullValueSegments;
 import org.openmrs.module.pcslabinterface.rules.RemoveValueModifiersFromHIVViralLoads;
 import org.openmrs.module.pcslabinterface.rules.TransformRule;
 
+import org.openmrs.module.pcslabinterface.rules.AdjustNegativeConceptForAFB;
+import org.openmrs.module.pcslabinterface.rules.RemoveAfbConfirmationNullValueSegments;
+
 public class PcsLabInterfaceConstants {
 
 	public static final String PCSLABINTERFACE_GP_QUEUE_DIR = "pcslabinterface.queue_dir";
@@ -50,7 +53,12 @@ public class PcsLabInterfaceConstants {
 					new AdjustNegativeConceptForUrineProtein(),
 					new RemoveDNAPCRNullValueSegments(),
 					new RemoveConfirmationNullValueSegments(),
-					new ConvertPV1ToPD1()
+
+                    new ConvertPV1ToPD1()
+                    /*new AdjustNegativeConceptForAFB(),
+                    new RemoveAfbConfirmationNullValueSegments(),*/
+
+
 			};
 		return rules;
 	}

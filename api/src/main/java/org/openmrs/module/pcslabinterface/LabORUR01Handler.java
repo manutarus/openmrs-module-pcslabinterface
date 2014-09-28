@@ -19,54 +19,17 @@ import ca.uhn.hl7v2.model.DataTypeException;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.Type;
 import ca.uhn.hl7v2.model.Varies;
-import ca.uhn.hl7v2.model.v25.datatype.CE;
-import ca.uhn.hl7v2.model.v25.datatype.CWE;
-import ca.uhn.hl7v2.model.v25.datatype.CX;
-import ca.uhn.hl7v2.model.v25.datatype.DLD;
-import ca.uhn.hl7v2.model.v25.datatype.DT;
-import ca.uhn.hl7v2.model.v25.datatype.DTM;
-import ca.uhn.hl7v2.model.v25.datatype.FT;
-import ca.uhn.hl7v2.model.v25.datatype.ID;
-import ca.uhn.hl7v2.model.v25.datatype.IS;
-import ca.uhn.hl7v2.model.v25.datatype.NM;
-import ca.uhn.hl7v2.model.v25.datatype.PL;
-import ca.uhn.hl7v2.model.v25.datatype.ST;
-import ca.uhn.hl7v2.model.v25.datatype.TM;
-import ca.uhn.hl7v2.model.v25.datatype.TS;
-import ca.uhn.hl7v2.model.v25.datatype.XCN;
+import ca.uhn.hl7v2.model.v25.datatype.*;
 import ca.uhn.hl7v2.model.v25.group.ORU_R01_OBSERVATION;
 import ca.uhn.hl7v2.model.v25.group.ORU_R01_ORDER_OBSERVATION;
 import ca.uhn.hl7v2.model.v25.group.ORU_R01_PATIENT_RESULT;
 import ca.uhn.hl7v2.model.v25.message.ORU_R01;
-import ca.uhn.hl7v2.model.v25.segment.MSH;
-import ca.uhn.hl7v2.model.v25.segment.NK1;
-import ca.uhn.hl7v2.model.v25.segment.OBR;
-import ca.uhn.hl7v2.model.v25.segment.OBX;
-import ca.uhn.hl7v2.model.v25.segment.ORC;
-import ca.uhn.hl7v2.model.v25.segment.PD1;
-import ca.uhn.hl7v2.model.v25.segment.PID;
-import ca.uhn.hl7v2.model.v25.segment.PV1;
+import ca.uhn.hl7v2.model.v25.segment.*;
 import ca.uhn.hl7v2.parser.EncodingCharacters;
 import ca.uhn.hl7v2.parser.PipeParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.Concept;
-import org.openmrs.ConceptAnswer;
-import org.openmrs.ConceptName;
-import org.openmrs.ConceptProposal;
-import org.openmrs.Drug;
-import org.openmrs.Encounter;
-import org.openmrs.EncounterType;
-import org.openmrs.Form;
-import org.openmrs.Location;
-import org.openmrs.Obs;
-import org.openmrs.Patient;
-import org.openmrs.Person;
-import org.openmrs.PersonAttribute;
-import org.openmrs.PersonAttributeType;
-import org.openmrs.Relationship;
-import org.openmrs.RelationshipType;
-import org.openmrs.User;
+import org.openmrs.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.hl7.HL7Constants;
 import org.openmrs.hl7.HL7Service;
@@ -76,14 +39,7 @@ import org.openmrs.util.OpenmrsConstants;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -193,13 +149,12 @@ public class LabORUR01Handler extends ORUR01Handler {
 
 		// create the encounter
 		Patient patient = getPatientByIdentifier(pid);
-		if (log.isDebugEnabled())
+      	if (log.isDebugEnabled())
 			log.debug("Processing HL7 message for patient " + patient.getPatientId());
 
 		// create an encounter
 		Encounter encounter = createEncounter(msh, patient, oru, orc);
-
-		// do the discharge to location logic
+     	// do the discharge to location logic
 		try {
 			updateHealthCenter(patient, oru);
 		} catch (Exception e) {
@@ -261,6 +216,8 @@ public class LabORUR01Handler extends ORUR01Handler {
 				Date datetime = getDatetime(obr);
 				if (datetime == null)
 					datetime = encounter.getEncounterDatetime();
+                if (datetime == null)
+                    datetime=new Date();
 				obsGrouper.setObsDatetime(datetime);
 				obsGrouper.setLocation(encounter.getLocation());
 				obsGrouper.setCreator(encounter.getCreator());
@@ -414,9 +371,11 @@ public class LabORUR01Handler extends ORUR01Handler {
 	private void saveObsFromEncounter(Encounter encounter) throws HL7Exception {
 		// save each obs but not the encounter object
 		// can't use getAllObs() method here because of how cascade saving is done
+
 		for (Obs obs : encounter.getObsAtTopLevel(false)) {
 			recursivelySetEncounter(obs, null);
 			// the changeMessage here is not used
+
 			Context.getObsService().saveObs(obs, "new stand-alone observation from orur01 handler");
 		}
 	}
@@ -573,6 +532,7 @@ public class LabORUR01Handler extends ORUR01Handler {
 
 		PV1 pv1 = getPV1(oru);
 
+
 		// get the referenced encounterId if it is in the PV1 segment
 		Integer encounterId = null;
 
@@ -580,7 +540,8 @@ public class LabORUR01Handler extends ORUR01Handler {
 		CX visitNumber = pv1.getVisitNumber();
 		try {
 			encounterId = Integer.valueOf(visitNumber.getIDNumber().getValue());
-		} catch (NumberFormatException e) {
+
+        } catch (NumberFormatException e) {
 			// pass
 		}
 
@@ -591,17 +552,50 @@ public class LabORUR01Handler extends ORUR01Handler {
 		// going to be appended to it.  Fetch the old encounter from
 		// the database
 		if (encounterId != null) {
+
 			encounter = Context.getEncounterService().getEncounter(encounterId);
 		} else {
 			// if no encounter_id was passed in, this is a new
 			// encounter, create the object
 			encounter = new Encounter();
 
-			Date encounterDate = getEncounterDate(pv1);
-			Person provider = getProvider(oru);
-			Location location = getLocation(oru);
-			Form form = getForm(msh);
-			EncounterType encounterType = getEncounterType(msh, form);
+
+            //added by alfayo
+            //added by alfayo
+            //MSH msh = getMSH(oru);
+            String sendingApplication = msh.getSendingApplication().getNamespaceID().getValue();
+            //added by alfayo
+
+            ////
+
+            Person provider = new Person();
+            EncounterType encounterType=new EncounterType();
+            Form form=new Form();
+            Location location = getLocation(oru);
+            if(sendingApplication.equals("EID")){
+               String unKnownProvider="58-8";
+                //unKnownProvider="3-4";
+                provider=getProviderBySystemId(unKnownProvider);
+                form=getDummyFormForEid(Integer.parseInt("16"));
+                encounterType = getEncounterType(msh, form);
+
+            }else{
+                PD1 pd1=getPD1(oru);
+                XCN hl7Provider =pd1.getPatientPrimaryCareProviderNameIDNo(0);
+                String providerSystemId = hl7Provider.getIDNumber().getValue();
+                provider=getProviderBySystemId(providerSystemId);
+
+
+                form = getForm(msh);
+                encounterType = getEncounterType(msh, form);
+
+            }
+
+//get provider from pdi
+
+			Date encounterDate =new Date(); //getEncounterDate(pv1);
+
+
 			User creator = getEnterer(orc);
 			//			Date dateEntered = getDateEntered(orc); // ignore this since we have no place in the data model to store it
 
@@ -613,6 +607,8 @@ public class LabORUR01Handler extends ORUR01Handler {
 			encounter.setEncounterType(encounterType);
 			encounter.setCreator(creator);
 			encounter.setDateCreated(new Date());
+
+
 		}
 
 		return encounter;
@@ -1010,10 +1006,20 @@ public class LabORUR01Handler extends ORUR01Handler {
 
 	private Person getProvider(ORU_R01 oru) throws HL7Exception {
 		// prefer PV1
-		PV1 pv1 = getPV1(oru);
-		Person provider = getProvider(pv1);
+  //added by alfayo
+        MSH msh = getMSH(oru);
+        String sendingApplication = msh.getSendingApplication().getNamespaceID().getValue();
+        //added by alfayo
+       	PV1 pv1 = getPV1(oru);
+        Person provider = new Person();
+        if(sendingApplication.equals("EID")){
 
-		// TODO add logic here to find it from the PD1
+            provider.setPersonId(1);
+
+        }else{
+            provider = getProvider(pv1);
+        }
+	// TODO add logic here to find it from the PD1
 		return provider;
 	}
 
@@ -1025,7 +1031,8 @@ public class LabORUR01Handler extends ORUR01Handler {
 
 		// PCS sends systemIds for provider identifier
 		String identifier = hl7Provider.getIDNumber().getValue();
-		if (identifier.matches("\\d+-\\d")) {
+
+        if (identifier.matches("\\d+-\\d")) {
 			return getProviderBySystemId(identifier);
 		}
 
@@ -1107,6 +1114,7 @@ public class LabORUR01Handler extends ORUR01Handler {
 		if (form != null)
 			return form.getEncounterType();
 		// TODO: resolve encounter type from MSH data - do we need PV1 too?
+
 		return null;
 	}
 
@@ -1247,7 +1255,8 @@ public class LabORUR01Handler extends ORUR01Handler {
 		Set<Patient> matchingPatients = new HashSet<Patient>();
 		for (CX identifier : patientIdentifierList) {
 			String idNumber = identifier.getIDNumber().getValue();
-			String checkDigit = identifier.getCheckDigit().getValue();
+
+           	String checkDigit = identifier.getCheckDigit().getValue();
 			if (!(idNumber.contains("-")) && checkDigit != null)
 				idNumber = idNumber + "-" + checkDigit;
 			identifiers.add(idNumber);
@@ -1261,5 +1270,12 @@ public class LabORUR01Handler extends ORUR01Handler {
 
 		return p;
 	}
+
+    //Get patient by ID
+
+    private Form getDummyFormForEid(Integer formId) throws HL7Exception {
+       Form form = Context.getFormService().getForm(formId);
+        return form;
+    }
 
 }

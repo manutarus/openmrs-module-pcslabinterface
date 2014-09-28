@@ -68,13 +68,38 @@ public class LabORUR01HandlerTest extends BaseModuleContextSensitiveTest {
 		ObsService obsService = Context.getObsService();
 
 		// largely borrowed from another test; simply changed the PID format
-		String hl7string = "MSH|^~\\&|PCSLABPLUS|PCS|HL7LISTENER|AMRS.ELD|20080226102656||ORU^R01|ABC101083591|P|2.5|1||||||||16^AMRS.ELD.FORMID\r"
+		String hl7string1 = "MSH|^~\\&|PCSLABPLUS|PCS|HL7LISTENER|AMRS.ELD|20080226102656||ORU^R01|ABC101083591|P|2.5|1||||||||16^AMRS.ELD.FORMID\r"
 				+ "PID|||12345^^M10^AMRS^MR||John3^Doe^\r"
 				+ "PV1||O|1^Unknown Location||||1^Super User (1-8)|||||||||||||||||||||||||||||||||||||20080212|||||||V\r"
 				+ "ORC|RE||||||||20080226102537|1^Super User\r"
 				+ "OBR|1|||1238^MEDICAL RECORD OBSERVATIONS^99DCT\r"
 				+ "OBX|1|NM|5497^CD4, BY FACS^99DCT||450|||||||||20080206\r"
 				+ "OBX|2|DT|5096^RETURN VISIT DATE^99DCT||20080229|||||||||20080212";
+
+
+
+        String hl7string="MSH|^~\\&|PCSLABPLUS|PCS|HL7LISTENER|AMRS.ELD|20140422152905||ORU^R01|ABC1014362374|P|2.5|1||||||||16^AMRS.ELD.FORMID\r"
+                + "PID|||482477309-9^9^M10^AMRS^MR||RUTO^ARNODAH^JEMOSBEI^^Ms.\r"
+                + "PD1|||Mosoriot^D^2^^^AMRS^L^AMPATH|363-2^^Emily Koech (363-2)\r"
+                + "ORC|RE||||||||20140422152905|40^GIDEONOBILA\r"
+                + "OBR|1|||90^CD3/CD4^99PCS\r"
+                + "NTE|1|L|Kindly draw fresh sample for analysis.|RE\r"
+                + "OBX|1|NM|1310^CD3 %^99DCT|||^%|55 - 85||||X|20090220||201403071734|||||201403111635\r"
+                + "NTE|||PCS Value: originally ST datatype\r"
+                + "NTE|1|L|REMARK NOT ENTER BY USER|RE\r"
+                + "OBX|2|NM|730^CD4 %^99DCT|||^%|31 - 60||||X|20090220||201403071734|||||201403111635\r"
+                + "NTE|||PCS Value: originally ST datatype\r"
+                + "NTE|1|L|REMARK NOT ENTER BY USER|RE\r"
+                + "OBX|3|NM|1028^CD3 abs^99DCT|||^cells/uL|690 - 2540||||X|20090220||201403071734|||||201403111635\r"
+                + "NTE|||PCS Value: originally ST datatype\r"
+                + "NTE|1|L|REMARK NOT ENTER BY USER|RE\r"
+                + "OBX|4|NM|5497^CD4 abs^99DCT|||^cells/uL|445 - 1497||||X|20090220||201403071734|||||201403111635\r"
+                + "NTE|||PCS Value: originally ST datatype\r"
+                + "NTE|1|L|REMARK NOT ENTER BY USER|RE\r"
+               
+                + "NTE|||PCS Value: originally ST datatype\r"
+                + "NTE|1|L|REMARK NOT ENTER BY USER|RE\r"
+                + "OBX|6|NM|854^T H/S RATIO^99DCT||0||||||F|||201403071734|||||201403111635";
 
 		Message hl7message = parser.parse(hl7string);
 		router.processMessage(hl7message);

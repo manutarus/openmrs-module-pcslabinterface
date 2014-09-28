@@ -2,6 +2,7 @@ package org.openmrs.module.pcslabinterface.rules;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.lang.System;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class ConvertPV1ToPD1 extends RegexTransformRule {
 	public String transform(String test) {
 
 		String[] testParts = test.split("\\|");
-
+System.out.println("Lengh LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL test=="+testParts.length);
 		// give up silently if PV1 does not have enough information
 		if (testParts.length < 8) {
 			return test;
@@ -44,11 +45,11 @@ public class ConvertPV1ToPD1 extends RegexTransformRule {
 			return test;
 		}
 
-		String locationId = locationParts[0];
-		String locationName = locationParts[1];
+		String locationId = "4";//locationParts[0];
+		String locationName ="4";//"Chulaimbo" ;//locationParts[1];
 
-		String provider = testParts[7];
-
+		String provider = "3-4";//testParts[7];
+        System.out.println("provider MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM Befor split==="+test+"XXXXXXXXXX provider"+provider );
 		List<String> out = new ArrayList<String>();
 		out.add("PD1");
 		out.add("");
